@@ -32,8 +32,18 @@ object TransformacionesLocal extends {
     val DWE_SGR_MU_ASIG_OPERADORES_UTE = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGR_MU_ASIG_OPERADORES_UTE_*")
     val DWE_SGE_SAP_PROVEEDORES = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGE_SAP_PROVEEDORES_*")
 
-    DWE_VM_UAACTIVI.show(5)
-    DWE_VM_UGACTMUN.show(5)
+    //DWE_VM_UAACTIVI.show()
+    //DWE_VM_UGACTMUN.show()
+
+    //Filtramos (lt = less than, gt = greater than, || = or)
+
+    //Primero probamos de una en una
+    //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30")))).show()
+    //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-xx-xx)) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-xx-xx))
+    //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").isNull).show()
+
+    //Toda junta
+      val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))) || (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-xx-xx")) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-xx-xx")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull))).show()
   }
 
 
