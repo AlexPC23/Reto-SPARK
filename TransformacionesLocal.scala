@@ -43,7 +43,8 @@ object TransformacionesLocal extends {
     //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").isNull).show()
 
     //Toda junta
-      val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))) || (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-xx-xx")) && DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-xx-xx")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull))).show()
+      val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))) || (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-08-01")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull))).show()
+      val DWE_VM_UAACTIVI2 = DWE_VM_UAACTIVI.filter((DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UAACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UAACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UAACTIVI("HASTA_DT").isNull)))
   }
 
 
