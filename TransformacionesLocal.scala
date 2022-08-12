@@ -25,12 +25,14 @@ object TransformacionesLocal extends {
     val DWE_VM_ENTLOCAL = spark.read.option("inferSchema", true).option("header", true).csv("DWE_VM_ENTLOCAL_*")
     val DWE_VM_ELTREPOB = spark.read.option("inferSchema", true).option("header", true).csv("DWE_VM_ELTREPOB_*")
     val DWE_VM_COMUAUTO = spark.read.option("inferSchema", true).option("header", true).csv("DWE_VM_COMUAUTO_*")
-    val DWE_SGR_MU_ASIG_OPERADORES_UF = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGR_MU_ASIG_OPERADORES_UF_*")
-    val DWE_SGR_MU_ASIG_OPERADORES_UTE = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGR_MU_ASIG_OPERADORES_UTE_*")
+    val DWE_SGR_MU_ASIG_OPERADORES_UF_TMP = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGR_MU_ASIG_OPERADORES_UF_TMP_*")
+    val DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP_*")
     val DWE_SGE_SAP_PROVEEDORES = spark.read.option("inferSchema", true).option("header", true).csv("DWE_SGE_SAP_PROVEEDORES_*")
 
     //DWE_VM_UAACTIVI.show()
     //DWE_VM_UGACTMUN.show()
+    DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP.createTempView("DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP")
+    DWE_SGR_MU_ASIG_OPERADORES_UF_TMP.createTempView("DWE_SGR_MU_ASIG_OPERADORES_UF_TMP")
 
     //Filtramos (lt = less than, gt = greater than, || = or)
 
@@ -40,14 +42,16 @@ object TransformacionesLocal extends {
     //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").isNull).show()
 
     //Filters
-    val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter((DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))))|| (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-07-01")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull)))
-    val DWE_VM_UAACTIVI2 = DWE_VM_UAACTIVI.filter((DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UAACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UAACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UAACTIVI("HASTA_DT").isNull)))
-    val DWE_VM_UGACTMUN2 = DWE_VM_UGACTMUN.filter((DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTMUN("HASTA_DT").isNull)))
-    val DWE_VM_UFTRGMUN2 = DWE_VM_UFTRGMUN.filter((DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFTRGMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFTRGMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFTRGMUN("HASTA_DT").isNull)))
-    val DWE_VM_ENTLTPRE2 = DWE_VM_ENTLTPRE.filter((DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ENTLTPRE("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ENTLTPRE("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ENTLTPRE("HASTA_DT").isNull)))
-    val DWE_VM_ELTREPOB2 = DWE_VM_ELTREPOB.filter((DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ELTREPOB("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ELTREPOB("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ELTREPOB("HASTA_DT").isNull)))
-    val DWE_VM_UGACTIVI2 = DWE_VM_UGACTIVI.filter((DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTIVI("HASTA_DT").isNull)))
-    val DWE_VM_UFUGACTI2 = DWE_VM_UFUGACTI.filter((DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFUGACTI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFUGACTI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFUGACTI("HASTA_DT").isNull)))
+    val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter((DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))))|| (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-07-01")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull))) //TP
+    val DWE_VM_UAACTIVI2 = DWE_VM_UAACTIVI.filter((DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UAACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UAACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UAACTIVI("HASTA_DT").isNull))) //U
+    val DWE_VM_UGACTMUN2 = DWE_VM_UGACTMUN.filter((DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTMUN("HASTA_DT").isNull))) //M
+    val DWE_VM_UFTRGMUN2 = DWE_VM_UFTRGMUN.filter((DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFTRGMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFTRGMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFTRGMUN("HASTA_DT").isNull))) //T
+    val DWE_VM_ENTLTPRE2 = DWE_VM_ENTLTPRE.filter((DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ENTLTPRE("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ENTLTPRE("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ENTLTPRE("HASTA_DT").isNull))) //R
+    val DWE_VM_ELTREPOB2 = DWE_VM_ELTREPOB.filter((DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ELTREPOB("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ELTREPOB("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ELTREPOB("HASTA_DT").isNull))) //E
+    val DWE_VM_UGACTIVI2 = DWE_VM_UGACTIVI.filter((DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTIVI("HASTA_DT").isNull))) //G
+    val DWE_VM_UFUGACTI2 = DWE_VM_UFUGACTI.filter((DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFUGACTI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFUGACTI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFUGACTI("HASTA_DT").isNull))) //UF
+    //val DWE_VM_TIPOLENT2 = DWE_VM_TIPOLENT.filter((DWE_VM_TIPOLENT("DESDE_DT").lt(lit(DWE_VM_ELTREPOB("DESDE_DT"))) && (DWE_VM_TIPOLENT("HASTA_DT").gt(lit(DWE_VM_ELTREPOB("HASTA_DT"))) || (DWE_VM_TIPOLENT("HASTA_DT").isNull)))) //S
+
 
     //Hacemos los joins (líneas 20 y 27-31)
     DWE_VM_UFUGACTI2.join(DWE_SGE_SAP_PROVEEDORES, DWE_VM_UFUGACTI2("UNFAC_ID") === DWE_SGE_SAP_PROVEEDORES("PROVE_ID"), "right")
@@ -58,7 +62,7 @@ object TransformacionesLocal extends {
     val UFU_UGA_ELTRE = UFU_UGA.join(DWE_VM_ELTREPOB2, (DWE_VM_UFUGACTI2("DESDE_DT") <= DWE_VM_ELTREPOB2("HASTA_DT")) &&
       ((DWE_VM_UFUGACTI2.col("HASTA_DT").isNull && DWE_VM_ELTREPOB2("DESDE_DT") >= DWE_VM_ELTREPOB2.col("DESDE_DT")) ||
         (DWE_VM_UFUGACTI2.col("HASTA_DT").isNotNull && DWE_VM_UFUGACTI2.col("HASTA_DT") >= DWE_VM_ELTREPOB2.col("DESDE_DT"))), "left")
-    val UFU_UGA_ELTRE_PROV = UFU_UGA_ELTRE.join(DWE_SGE_SAP_PROVEEDORES, DWE_SGE_SAP_PROVEEDORES("PROVE_ID") === DWE_VM_UFUGACTI("UNFAC_ID"), "right").show()
+    val UFU_UGA_ELTRE_PROV = UFU_UGA_ELTRE.join(DWE_SGE_SAP_PROVEEDORES, DWE_SGE_SAP_PROVEEDORES("PROVE_ID") === DWE_VM_UFUGACTI("UNFAC_ID"), "right")
 
     //Parte con sparksql (líneas 35-47)
     val SPARKSQL1 = spark.sql(
@@ -72,10 +76,30 @@ object TransformacionesLocal extends {
         |             CASE WHEN OP.UTE_ID IS NOT NULL THEN OP.PORCENTAJE_QT
         |                  ELSE NULL
         |             END AS PORCENTAJE_UTE_QT ,OP.DESDE_DT,OP.HASTA_DT, OP.UFUGA_ID,OP.MEDIOSPP_SN
-        |             from DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP OU  right join DWE_SGR_MU_ASIG_OPERADORES_UF_TMP OP on OP.UTE_ID = OU.UTE_ID
-        |""".stripMargin
-    )
+        |             from DWE_SGR_MU_ASIG_OPERADORES_UTE_TMP OU right join DWE_SGR_MU_ASIG_OPERADORES_UF_TMP OP on OP.UTE_ID = OU.UTE_ID""".stripMargin)
 
+    val JOINFINAL = SPARKSQL1.alias("OP").join(DWE_VM_UFUGACTI2, DWE_VM_UFUGACTI2("UFUGA_ID") === SPARKSQL1("UFUGA_ID"), "left")
+
+    //Joins (línea 48)
+    val V2 = UFU_UGA_ELTRE_PROV.as("V2")
+    val JOINDATOS = DWE_VM_UAACTIVI2.alias("U")
+      .join(DWE_VM_UGACTIVI2.alias("G"), col("U.UAACT_ID") === col("G.UAACT_ID"), "inner")
+      .join(DWE_VM_UGACTMUN2.alias("M"), col("G.UGACT_ID") === col("M.UGACT_ID"), "inner")
+      .join(DWE_VM_ENTLOCAL.alias("L"), col("M.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
+      .join(DWE_VM_UFUGACTI2.alias("F"), col("G.UGACT_ID") === col("F.UGACT_ID"), "inner")
+      .join(DWE_VM_UFTRGMUN2.alias("T"), col("F.UFUGA_ID") === col("T.UFUGA_ID"), "inner")
+    val JOINDATOS2 = JOINDATOS.join(DWE_VM_ENTLTPRE2.alias("R"), col("T.MUNTR_ID") === col("R.MUNTR_ID"), "inner")
+    val JOINDATOS3 = JOINDATOS2.join(DWE_VM_ENTLOCAL, col("R.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
+    val JOINDATOS4 = JOINDATOS3.join(DWE_VM_ELTREPOB2.alias("E"), col("T.UFTRG_ID") === col("E.UFTRG_ID"), "inner")
+    val JOINDATOS5 = JOINDATOS4.join(DWE_VM_POBPERST.alias("P"), col("F.UFUGA_ID") === col("P.UFUGA_ID"), "inner")
+    val JOINDATOS6 = JOINDATOS5.join(DWE_VM_ELTREPOB2, col("P.DESDE_DT") === col("E.DESDE_DT"), "inner")
+    val JOINDATOS7 = JOINDATOS6.join(DWE_VM_UNIDADMI.alias("UA"), col("UA.UNADM_ID") === col("U.UNADM_ID"), "inner")
+    val JOINDATOS8 = JOINDATOS7.join(DWE_VM_COMUAUTO.alias("C"), col("UA.COMAU_ID") === col("C.COMAU_ID"), "inner")
+    val JOINDATOS9 = JOINDATOS8.join(DWE_VM_TIPOLENT.alias("S"), col("S.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
+    val JD10 = JOINDATOS9.join(DWE_VM_TPRECOGI.alias("TP"), col("TP.TPREC_ID") === col("R.TPREC_ID"), "inner")
+    //val JD11 = JD10.join(DWE_SGE_SAP_PROVEEDORES.alias("V"), col("V.PROVE_ID") === col("V2.PROVE_ID"), "inner").show()
+    //val JD12 = JD11.join(JOINFINAL.alias("UF2"), col("UF2.UFUGA_ID") === col("P.UFUGA_ID"), "inner").show()
+    //val JD13 = JD12.join(DWE_VM_UFUGACTI2, col("UF2.UGACT_ID") === col("UF.UGACT_ID"), "inner")
 
 
 
