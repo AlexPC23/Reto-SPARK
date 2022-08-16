@@ -1,7 +1,7 @@
 package Recogida.Common
 
 import Recogida.spark
-import org.apache.spark.sql.functions.{col, isnull, lit, to_timestamp}
+import org.apache.spark.sql.functions.{col, isnull, lit, to_timestamp, when}
 import org.apache.spark.storage.StorageLevel
 import spark.implicits._
 
@@ -42,7 +42,7 @@ object TransformacionesLocal extends {
     //val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter(DWE_VM_TIPOLFAC("HASTA_DT").isNull).show()
 
     //Filters
-    val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter((DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30"))))|| (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_TIPOLFAC("HASTA_DT").gt("2017-07-01")) || (DWE_VM_TIPOLFAC("HASTA_DT").isNull))) //TP
+    val DWE_VM_TIPOLFAC2 = DWE_VM_TIPOLFAC.filter((DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_TIPOLFAC("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_TIPOLFAC("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_TIPOLFAC("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_TIPOLFAC("HASTA_DT").isNull))) //TP
     val DWE_VM_UAACTIVI2 = DWE_VM_UAACTIVI.filter((DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UAACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UAACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UAACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UAACTIVI("HASTA_DT").isNull))) //U
     val DWE_VM_UGACTMUN2 = DWE_VM_UGACTMUN.filter((DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTMUN("HASTA_DT").isNull))) //M
     val DWE_VM_UFTRGMUN2 = DWE_VM_UFTRGMUN.filter((DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFTRGMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFTRGMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFTRGMUN("HASTA_DT").isNull))) //T
@@ -55,7 +55,9 @@ object TransformacionesLocal extends {
 
     //Hacemos los joins (líneas 20 y 27-31)
     DWE_VM_UFUGACTI2.join(DWE_SGE_SAP_PROVEEDORES, DWE_VM_UFUGACTI2("UNFAC_ID") === DWE_SGE_SAP_PROVEEDORES("PROVE_ID"), "right")
-    DWE_VM_TIPOLFAC2.join(DWE_VM_ENTLTPRE, DWE_VM_TIPOLFAC2("ELMUN_ID") === DWE_VM_ENTLTPRE("ELMUN_ID"), "right")
+    DWE_VM_TIPOLFAC2.join(DWE_VM_ENTLTPRE, DWE_VM_TIPOLFAC2("ELMUN_ID") === DWE_VM_ENTLTPRE2("ELMUN_ID"), "right")
+
+
 
     //Triple join (líneas 32-34)
     val UFU_UGA = DWE_VM_UFUGACTI2.alias("VM_UFUGACTI").join(DWE_VM_UGACTIVI2.alias("VM_UGACTIVI"), DWE_VM_UFUGACTI2("UGACT_ID") === DWE_VM_UGACTIVI2("UGACT_ID"), "left")
@@ -81,29 +83,43 @@ object TransformacionesLocal extends {
     val JOINFINAL = SPARKSQL1.alias("OP").join(DWE_VM_UFUGACTI2, DWE_VM_UFUGACTI2("UFUGA_ID") === SPARKSQL1("UFUGA_ID"), "left")
 
     //Joins (línea 48)
-    val V2 = UFU_UGA_ELTRE_PROV.as("V2")
+    //Alias
+
     val JOINDATOS = DWE_VM_UAACTIVI2.alias("U")
       .join(DWE_VM_UGACTIVI2.alias("G"), col("U.UAACT_ID") === col("G.UAACT_ID"), "inner")
       .join(DWE_VM_UGACTMUN2.alias("M"), col("G.UGACT_ID") === col("M.UGACT_ID"), "inner")
       .join(DWE_VM_ENTLOCAL.alias("L"), col("M.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
       .join(DWE_VM_UFUGACTI2.alias("F"), col("G.UGACT_ID") === col("F.UGACT_ID"), "inner")
       .join(DWE_VM_UFTRGMUN2.alias("T"), col("F.UFUGA_ID") === col("T.UFUGA_ID"), "inner")
-    val JOINDATOS2 = JOINDATOS.join(DWE_VM_ENTLTPRE2.alias("R"), col("T.MUNTR_ID") === col("R.MUNTR_ID"), "inner")
-    val JOINDATOS3 = JOINDATOS2.join(DWE_VM_ENTLOCAL, col("R.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
-    val JOINDATOS4 = JOINDATOS3.join(DWE_VM_ELTREPOB2.alias("E"), col("T.UFTRG_ID") === col("E.UFTRG_ID"), "inner")
-    val JOINDATOS5 = JOINDATOS4.join(DWE_VM_POBPERST.alias("P"), col("F.UFUGA_ID") === col("P.UFUGA_ID"), "inner")
-    val JOINDATOS6 = JOINDATOS5.join(DWE_VM_ELTREPOB2, col("P.DESDE_DT") === col("E.DESDE_DT"), "inner")
-    val JOINDATOS7 = JOINDATOS6.join(DWE_VM_UNIDADMI.alias("UA"), col("UA.UNADM_ID") === col("U.UNADM_ID"), "inner")
-    val JOINDATOS8 = JOINDATOS7.join(DWE_VM_COMUAUTO.alias("C"), col("UA.COMAU_ID") === col("C.COMAU_ID"), "inner")
-    val JOINDATOS9 = JOINDATOS8.join(DWE_VM_TIPOLENT.alias("S"), col("S.ELMUN_ID") === col("L.ELMUN_ID"), "inner")
-    val JD10 = JOINDATOS9.join(DWE_VM_TPRECOGI.alias("TP"), col("TP.TPREC_ID") === col("R.TPREC_ID"), "inner")
-    //val JD11 = JD10.join(DWE_SGE_SAP_PROVEEDORES.alias("V"), col("V.PROVE_ID") === col("V2.PROVE_ID"), "inner").show()
-    //val JD12 = JD11.join(JOINFINAL.alias("UF2"), col("UF2.UFUGA_ID") === col("P.UFUGA_ID"), "inner").show()
-    //val JD13 = JD12.join(DWE_VM_UFUGACTI2, col("UF2.UGACT_ID") === col("UF.UGACT_ID"), "inner")
+      .select("U.UNADM_ID", "U.ACTIV_ID", "G.UNGES_ID", "L.ELMUN_ID", "T.MUNTR_ID", "F.UNFAC_ID", "T.UFTRG_ID", "F.UFUGA_ID")
+
+    val JOINDATOS2 = JOINDATOS.alias("total")
+      .join(DWE_VM_ENTLTPRE2.alias("R"), JOINDATOS("ELMUN_ID") === DWE_VM_ENTLTPRE2("ELMUN_ID") && JOINDATOS("MUNTR_ID") === DWE_VM_ENTLTPRE2("MUNTR_ID"), "inner")
+      .join(DWE_VM_ELTREPOB2.alias("E"), DWE_VM_ELTREPOB2("UFTRG_ID") === JOINDATOS("UFTRG_ID"), "inner")
+      .join(DWE_VM_POBPERST.alias("P"), DWE_VM_POBPERST("UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
+      .join(DWE_VM_UNIDADMI.alias("UA"), DWE_VM_UNIDADMI("UNADM_ID") === JOINDATOS("UNADM_ID"), "inner")
+      .join(DWE_VM_COMUAUTO.alias("C"), DWE_VM_COMUAUTO("COMAU_ID") === DWE_VM_UNIDADMI("COMAU_ID"), "inner")
+      .join(DWE_VM_TIPOLENT.alias("S"), DWE_VM_TIPOLENT("ELMUN_ID") === JOINDATOS("ELMUN_ID"), "inner")
+      .join(DWE_VM_TPRECOGI.alias("TP"), DWE_VM_TPRECOGI("TPREC_ID") === DWE_VM_ENTLTPRE2("TPREC_ID"), "inner")
+      .select("total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "total.UFUGA_ID","total.UNFAC_ID", "E.DESDE_DT", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID") //"R.TPGFA_ID"
+      .join(UFU_UGA_ELTRE_PROV.alias("UF2"), UFU_UGA_ELTRE_PROV("UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
+      .join(JOINFINAL.alias("JOINFINAL"), JOINFINAL("OP.UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
+      .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT") //R.TPGFA_ID"
+
+    //Líneas (10-13)
+    var df = JOINDATOS2.withColumn("POBDC_QT", when(col("POBDC_QT").isNull, 0).otherwise(col("POBDC_QT")))
+      .withColumn("PROCE_ID", when(col("PROCE_ID").isNull, 0).otherwise(col("PROCE_ID")))
+      .withColumn("OPERADOR_ID", when(col("OPERADOR_ID").isNull, 0).otherwise(col("OPERADOR_ID")))
+      .withColumn("POBDC_QT", when(col("POBDC_QT") === 0, 1).otherwise(col("POBDC_QT")))
+
+      .withColumn("POBGC_QT", col("POBLA_QT") * col("POBDC_QT")) //POBGC_QT
+      .withColumn("POBDC_QT", col("POBIN_QT") * col("POBDC_QT")) //POBDC_QT
+
+      .select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UFTRG_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "PROCE_ID","UFUGA_ID", "PROVE_NM", "OPERADOR_ID", "POBDC_QT", "E.VERSI_ID").show()
+
+  }
 
 
-
-}
 
 
 
