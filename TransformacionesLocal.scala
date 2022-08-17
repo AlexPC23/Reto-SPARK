@@ -104,7 +104,7 @@ object TransformacionesLocal extends {
       .select("total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "total.UFUGA_ID","total.UNFAC_ID", "E.DESDE_DT", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID") //"R.TPGFA_ID"
       .join(UFU_UGA_ELTRE_PROV.alias("UF2"), UFU_UGA_ELTRE_PROV("UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
       .join(JOINFINAL.alias("JOINFINAL"), JOINFINAL("OP.UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
-      .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT") //R.TPGFA_ID"
+      .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT", "JOINFINAL.PORCENTAJE_QT", "JOINFINAL.UTE_ID", "JOINFINAL.PORCENTAJE_UTE_QT", "JOINFINAL.MEDIOSPP_SN") //R.TPGFA_ID"
 
     //Líneas (10-13)
     var df = JOINDATOS2.withColumn("POBDC_QT", when(col("POBDC_QT").isNull, 0).otherwise(col("POBDC_QT")))
@@ -113,9 +113,10 @@ object TransformacionesLocal extends {
       .withColumn("POBDC_QT", when(col("POBDC_QT") === 0, 1).otherwise(col("POBDC_QT")))
 
       .withColumn("POBGC_QT", col("POBLA_QT") * col("POBDC_QT")) //POBGC_QT
-      .withColumn("POBDC_QT", col("POBIN_QT") * col("POBDC_QT")) //POBDC_QT
+      .withColumn("POBDC_QT", col("POBIN_QT") * col("POBDC_QT")) //POBDC_QT.
+      .show()
 
-      .select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UFTRG_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "PROCE_ID","UFUGA_ID", "PROVE_NM", "OPERADOR_ID", "POBDC_QT", "E.VERSI_ID").show()
+      //.select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UFTRG_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "PROCE_ID","UFUGA_ID", "PROVE_NM", "OPERADOR_ID", "POBDC_QT","POBGC_QT", "E.VERSI_ID").show()
 
   }
 
