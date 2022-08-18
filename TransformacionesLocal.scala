@@ -47,7 +47,7 @@ object TransformacionesLocal extends {
     val DWE_VM_UGACTMUN2 = DWE_VM_UGACTMUN.filter((DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTMUN("HASTA_DT").isNull))) //M
     val DWE_VM_UFTRGMUN2 = DWE_VM_UFTRGMUN.filter((DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFTRGMUN("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFTRGMUN("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFTRGMUN("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFTRGMUN("HASTA_DT").isNull))) //T
     val DWE_VM_ENTLTPRE2 = DWE_VM_ENTLTPRE.filter((DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ENTLTPRE("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ENTLTPRE("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ENTLTPRE("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ENTLTPRE("HASTA_DT").isNull))) //R
-    val DWE_VM_ELTREPOB2 = DWE_VM_ELTREPOB.filter((DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_ELTREPOB("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_ELTREPOB("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_ELTREPOB("HASTA_DT").isNull))) //E
+    val DWE_VM_ELTREPOB2 = DWE_VM_ELTREPOB.filter((DWE_VM_ELTREPOB("DESDE_DT").lt(lit("2017-07-31")) && (DWE_VM_ELTREPOB("DESDE_DT").gt(lit("2017-07-01"))))) //E
     val DWE_VM_UGACTIVI2 = DWE_VM_UGACTIVI.filter((DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UGACTIVI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UGACTIVI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UGACTIVI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UGACTIVI("HASTA_DT").isNull))) //G
     val DWE_VM_UFUGACTI2 = DWE_VM_UFUGACTI.filter((DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-08-01")) && (DWE_VM_UFUGACTI("DESDE_DT").gt(lit("2017-06-30")))) || (DWE_VM_UFUGACTI("DESDE_DT").lt(lit("2017-07-01")) && (DWE_VM_UFUGACTI("HASTA_DT").gt(lit("2017-07-01")) || DWE_VM_UFUGACTI("HASTA_DT").isNull))) //UF
     //val DWE_VM_TIPOLENT2 = DWE_VM_TIPOLENT.filter((DWE_VM_TIPOLENT("DESDE_DT").lt(lit(DWE_VM_ELTREPOB("DESDE_DT"))) && (DWE_VM_TIPOLENT("HASTA_DT").gt(lit(DWE_VM_ELTREPOB("HASTA_DT"))) || (DWE_VM_TIPOLENT("HASTA_DT").isNull)))) //S
@@ -106,6 +106,29 @@ object TransformacionesLocal extends {
       .join(JOINFINAL.alias("JOINFINAL"), JOINFINAL("OP.UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
       .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT", "JOINFINAL.PORCENTAJE_QT", "JOINFINAL.UTE_ID", "JOINFINAL.PORCENTAJE_UTE_QT", "JOINFINAL.MEDIOSPP_SN", "TF.TPGFA_ID", "JOINFINAL.OPERADOR_ID_OP", "JOINFINAL.OPERADOR_ID_OU")
 
+    
+    /*
+    var df = JOINDATOS2.selectExpr(
+      "DESDE_DT", "UNADM_ID",
+      "ACTIV_ID",
+      "UNGES_ID",
+      "ELMUN_ID",
+      "UNFAC_ID",
+      "TPREC_ID",
+      "TPENT_ID",
+      "coalesce( TPGFA_ID,  TPENT_ID, TPGFA_ID ) as TPGFA_ID",
+      "coalesce(PROCE_ID, 0, PROCE_ID) as PROCE_ID",
+      "PROVE_NM",
+      "coalesce(OPERADOR_ID,0) as OPERADOR_ID",
+      "PORCENTAJE_QT",
+      "coalesce(POBDC_QT,1) as POBDC_QT",
+      "coalesce(POBDC_QT,1) as POBGC_QT",
+      "coalesce(UTE_ID,0) AS UTE_ID",
+      "PORCENTAJE_UTE_QT",
+      "MEDIOSPP_SN")
+*/
+
+/*
     //Líneas (10-13)
     var df = JOINDATOS2.withColumn("POBDC_QT", when(col("POBDC_QT").isNull, 0).otherwise(col("POBDC_QT")))
       .withColumn("PROCE_ID", when(col("PROCE_ID").isNull, 0).otherwise(col("PROCE_ID")))
@@ -117,19 +140,12 @@ object TransformacionesLocal extends {
       //.withColumn("UTE_ID", when(col("PORCENTAJE_QT").isNull, 0).otherwise(col("PORCENTAJE_QT")))
 
       .select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "TPGFA_ID", "PROCE_ID", "PROVE_NM", "POBDC_QT", "POBIN_QT", "POBLA_QT", "POBGC_QT", "OPERADOR_ID_OP", "OPERADOR_ID_OU", "OPERADOR_ID", "PORCENTAJE_QT")
-      .groupBy("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "TPGFA_ID", "PROCE_ID", "PROVE_NM", "POBDC_QT", "POBIN_QT", "POBLA_QT", "POBGC_QT", "OPERADOR_ID_OP", "OPERADOR_ID_OU", "OPERADOR_ID", "PORCENTAJE_QT").count()
-      .show()
-
-
-/*
-      .filter((col("DESDE_DT").lt(lit("2017-07-31")) && col("DESDE_DT").gt(lit("2017-07-01"))))
-      .filter(col("ACTIV_ID") === 1 || col("ACTIV_ID") === 2)
-      .filter(col("UNGES_ID") === "UG723")
-      .filter(col("TPREC_ID") === "0113")
-      .filter(col("ELMUN_ID") === "33011")
-      .filter((col("UNADM_ID") === "UA123" && col("ELMUN_ID") === 25006) || (col("UNADM_ID") === "UA1" && col("ELMUN_ID") === 14001))
+      .groupBy("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "TPGFA_ID", "PROCE_ID", "PROVE_NM", "POBDC_QT", "POBIN_QT", "POBLA_QT", "POBGC_QT", "OPERADOR_ID_OP", "OPERADOR_ID_OU", "OPERADOR_ID", "PORCENTAJE_QT")
+      .count()
       .show()
 */
+
+
   }
 
 
