@@ -1,7 +1,7 @@
 package Recogida.Common
 
 import Recogida.spark
-import org.apache.spark.sql.functions.{col, isnull, lit, to_timestamp, when}
+import org.apache.spark.sql.functions.{col, date_format, desc_nulls_first, isnull, lit, to_timestamp, when}
 import org.apache.spark.storage.StorageLevel
 import spark.implicits._
 
@@ -58,7 +58,6 @@ object TransformacionesLocal extends {
     DWE_VM_TIPOLFAC2.join(DWE_VM_ENTLTPRE, DWE_VM_TIPOLFAC2("ELMUN_ID") === DWE_VM_ENTLTPRE2("ELMUN_ID"), "right")
 
 
-
     //Triple join (líneas 32-34)
     val UFU_UGA = DWE_VM_UFUGACTI2.alias("VM_UFUGACTI").join(DWE_VM_UGACTIVI2.alias("VM_UGACTIVI"), DWE_VM_UFUGACTI2("UGACT_ID") === DWE_VM_UGACTIVI2("UGACT_ID"), "left")
     val UFU_UGA_ELTRE = UFU_UGA.join(DWE_VM_ELTREPOB2, (DWE_VM_UFUGACTI2("DESDE_DT") <= DWE_VM_ELTREPOB2("HASTA_DT")) &&
@@ -101,10 +100,11 @@ object TransformacionesLocal extends {
       .join(DWE_VM_COMUAUTO.alias("C"), DWE_VM_COMUAUTO("COMAU_ID") === DWE_VM_UNIDADMI("COMAU_ID"), "inner")
       .join(DWE_VM_TIPOLENT.alias("S"), DWE_VM_TIPOLENT("ELMUN_ID") === JOINDATOS("ELMUN_ID"), "inner")
       .join(DWE_VM_TPRECOGI.alias("TP"), DWE_VM_TPRECOGI("TPREC_ID") === DWE_VM_ENTLTPRE2("TPREC_ID"), "inner")
-      .select("total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "total.UFUGA_ID","total.UNFAC_ID", "E.DESDE_DT", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID") //"R.TPGFA_ID"
+      .join(DWE_VM_TIPOLFAC2.alias("TF"), DWE_VM_TIPOLFAC2("ELMUN_ID") === JOINDATOS("ELMUN_ID"), "inner")
+      .select("total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "total.UFUGA_ID","total.UNFAC_ID", "E.DESDE_DT", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "TF.TPGFA_ID")
       .join(UFU_UGA_ELTRE_PROV.alias("UF2"), UFU_UGA_ELTRE_PROV("UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
       .join(JOINFINAL.alias("JOINFINAL"), JOINFINAL("OP.UFUGA_ID") === JOINDATOS("UFUGA_ID"), "inner")
-      .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT", "JOINFINAL.PORCENTAJE_QT", "JOINFINAL.UTE_ID", "JOINFINAL.PORCENTAJE_UTE_QT", "JOINFINAL.MEDIOSPP_SN") //R.TPGFA_ID"
+      .select("E.DESDE_DT", "total.UNADM_ID", "total.ACTIV_ID", "total.UNGES_ID", "total.ELMUN_ID", "total.UFTRG_ID", "UF2.UFUGA_ID","total.UNFAC_ID", "R.TPREC_ID", "S.TPENT_ID", "TP.PROCE_ID", "E.POBIN_QT", "E.POBLA_QT", "E.VERSI_ID", "JOINFINAL.OPERADOR_ID", "UF2.PROVE_NM", "JOINFINAL.POBDC_QT", "JOINFINAL.PORCENTAJE_QT", "JOINFINAL.UTE_ID", "JOINFINAL.PORCENTAJE_UTE_QT", "JOINFINAL.MEDIOSPP_SN", "TF.TPGFA_ID", "JOINFINAL.OPERADOR_ID_OP", "JOINFINAL.OPERADOR_ID_OU")
 
     //Líneas (10-13)
     var df = JOINDATOS2.withColumn("POBDC_QT", when(col("POBDC_QT").isNull, 0).otherwise(col("POBDC_QT")))
@@ -114,10 +114,22 @@ object TransformacionesLocal extends {
 
       .withColumn("POBGC_QT", col("POBLA_QT") * col("POBDC_QT")) //POBGC_QT
       .withColumn("POBDC_QT", col("POBIN_QT") * col("POBDC_QT")) //POBDC_QT.
+      //.withColumn("UTE_ID", when(col("PORCENTAJE_QT").isNull, 0).otherwise(col("PORCENTAJE_QT")))
+
+      .select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "TPGFA_ID", "PROCE_ID", "PROVE_NM", "POBDC_QT", "POBIN_QT", "POBLA_QT", "POBGC_QT", "OPERADOR_ID_OP", "OPERADOR_ID_OU", "OPERADOR_ID", "PORCENTAJE_QT")
+      .groupBy("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "TPGFA_ID", "PROCE_ID", "PROVE_NM", "POBDC_QT", "POBIN_QT", "POBLA_QT", "POBGC_QT", "OPERADOR_ID_OP", "OPERADOR_ID_OU", "OPERADOR_ID", "PORCENTAJE_QT").count()
       .show()
 
-      //.select("DESDE_DT", "UNADM_ID", "ACTIV_ID", "UNGES_ID", "ELMUN_ID", "UFTRG_ID", "UNFAC_ID", "TPREC_ID", "TPENT_ID", "PROCE_ID","UFUGA_ID", "PROVE_NM", "OPERADOR_ID", "POBDC_QT","POBGC_QT", "E.VERSI_ID").show()
 
+/*
+      .filter((col("DESDE_DT").lt(lit("2017-07-31")) && col("DESDE_DT").gt(lit("2017-07-01"))))
+      .filter(col("ACTIV_ID") === 1 || col("ACTIV_ID") === 2)
+      .filter(col("UNGES_ID") === "UG723")
+      .filter(col("TPREC_ID") === "0113")
+      .filter(col("ELMUN_ID") === "33011")
+      .filter((col("UNADM_ID") === "UA123" && col("ELMUN_ID") === 25006) || (col("UNADM_ID") === "UA1" && col("ELMUN_ID") === 14001))
+      .show()
+*/
   }
 
 
